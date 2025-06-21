@@ -1,7 +1,8 @@
 const express = require('express');
+const serverless = require('serverless-http');
 const cors = require('cors');
-require('dotenv').config(); // Load environment variables
-const connectDB = require('./config/db'); // MongoDB connection
+const mongoose = require('mongoose');
+require('dotenv').config();
 
 const app = express();
 
@@ -10,26 +11,27 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Connect to MongoDB
-connectDB();
+// ✅ MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch((err) => console.error('❌ MongoDB connection error:', err));
 
 // ✅ Routes
 app.get('/', (req, res) => {
-  res.send("Caesar's Fruit backend is running 🍎🍌🍇");
+  res.send("Caesar's Fruit backend is running on Vercel 🍎🍌🍇");
 });
 
-const itemRoutes = require('./routes/itemroute');
-const saleRoutes = require('./routes/saleroute');
-const supplyRoutes = require('./routes/supplyroute');
-const purchaseRoutes = require('./routes/purchaseroute');
+const itemRoutes = require('../routes/itemroute');
+const saleRoutes = require('../routes/saleroute');
+const supplyRoutes = require('../routes/supplyroute');
+const purchaseRoutes = require('../routes/purchaseroute');
 
 app.use('/api/item', itemRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/supplies', supplyRoutes);
 app.use('/api/purchase', purchaseRoutes);
 
-// ✅ Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running locally at http://localhost:${PORT}`);
-});
+// ✅ Export for Vercel Serverless
+module.exports = app;
+module.exports.handler = serverless(app);
+
