@@ -2,7 +2,7 @@ const serverless = require('serverless-http');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config({ path: __dirname + '/../.env' });
-const connectDB = require('../config/db');
+const connectDB = require('../config/db.js');
 
 const app = express();
 
