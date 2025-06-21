@@ -1,9 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
-const connectDB = require('./config/db'); // This already handles mongoose.connect
+require('dotenv').config(); // Load environment variables
+const connectDB = require('./config/db'); // MongoDB connection
 
-// Initialize app
 const app = express();
 
 // ✅ Middleware
@@ -19,20 +18,18 @@ app.get('/', (req, res) => {
   res.send("Caesar's Fruit backend is running 🍎🍌🍇");
 });
 
-const fruitRoute = require('./routes/itemroute');
-app.use('/api/item', fruitRoute);
-
+const itemRoutes = require('./routes/itemroute');
 const saleRoutes = require('./routes/saleroute');
-app.use('/api/sales', saleRoutes);
-
 const supplyRoutes = require('./routes/supplyroute');
-app.use('/api/supplies', supplyRoutes);
-
 const purchaseRoutes = require('./routes/purchaseroute');
+
+app.use('/api/item', itemRoutes);
+app.use('/api/sales', saleRoutes);
+app.use('/api/supplies', supplyRoutes);
 app.use('/api/purchase', purchaseRoutes);
 
-// ✅ Start server once
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running locally at http://localhost:${PORT}`);
 });
