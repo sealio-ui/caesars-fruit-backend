@@ -14,6 +14,11 @@ app.use(express.urlencoded({ extended: true }));
 // ✅ Connect to MongoDB
 connectDB();
 
+// ✅ Add this root route!
+app.get('/', (req, res) => {
+  res.send("🍇 Caesar's Fruit backend is working!");
+});
+
 // ✅ Routes
 const itemRoutes = require('../routes/itemroute');
 const saleRoutes = require('../routes/saleroute');
