@@ -1,5 +1,6 @@
 const Item = require('../models/Item');
 const Purchase = require('../models/purchase');
+
 exports.getPurchases = async (req, res) => {
   try {
     const purchases = await Purchase.find().populate('item');
@@ -24,11 +25,12 @@ exports.getPurchases = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 exports.createPurchase = async (req, res) => {
   try {
     const { item, quantity, unitPrice, supplier, description } = req.body;
 
-    if (!itemId || !quantity || !unitPrice) {
+    if (!item || !quantity || !unitPrice) {
       return res.status(400).json({ error: 'Item, quantity, and unit price are required' });
     }
 
@@ -72,7 +74,6 @@ exports.createPurchase = async (req, res) => {
   }
 };
 
-
 exports.deletePurchaseById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -85,6 +86,7 @@ exports.deletePurchaseById = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 exports.deleteAllPurchases = async (req, res) => {
   try {
     await Purchase.deleteMany({});
