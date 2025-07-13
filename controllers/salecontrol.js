@@ -3,7 +3,7 @@ const Item = require('../models/Item');
 
 exports.getSales = async (req, res) => {
   try {
-    const sales = await Sale.find().lean(); // ✅ removed populate('item')
+    const sales = await Sale.find().lean();
 
     const formatted = sales.map(sale => ({
       ...sale,
@@ -28,13 +28,13 @@ exports.createSale = async (req, res) => {
 
     let totalPrice = 0;
     const components = [];
-    let isCornucopiaOnly = true;
+    let isOnlyCornucopia = true;
+    const nameSummary = [];
 
     for (const entry of items) {
       const { itemName, quantity } = entry;
 
       if (itemName === 'Cornucopia') {
-        // Cornucopia logic...
         const grape = await Item.findOne({ name: 'Anggur' });
         const apple = await Item.findOne({ name: 'Apel' });
         const strawberry = await Item.findOne({ name: 'Stroberi' });
@@ -64,13 +64,15 @@ exports.createSale = async (req, res) => {
           basket.price * 1
         ) * quantity * 0.8;
 
-        components.push({ name: 'Cornucopia', quantity });
+        // ✅ Don't add Cornucopia itself to the breakdown
         components.push({ name: 'Anggur', quantity: 3 * quantity });
         components.push({ name: 'Apel', quantity: 2 * quantity });
         components.push({ name: 'Stroberi', quantity: 1 * quantity });
         components.push({ name: 'Basket', quantity: 1 * quantity });
+
+        nameSummary.push(`${quantity}x Cornucopia`);
       } else {
-        isCornucopiaOnly = false;
+        isOnlyCornucopia = false;
 
         const item = await Item.findOne({ name: itemName });
         if (!item || item.quantityAvailable < quantity) {
@@ -82,6 +84,8 @@ exports.createSale = async (req, res) => {
 
         totalPrice += item.price * quantity;
         components.push({ name: itemName, quantity });
+
+        nameSummary.push(`${quantity}x ${itemName}`);
       }
     }
 
@@ -89,7 +93,9 @@ exports.createSale = async (req, res) => {
       totalPrice,
       quantity: components.reduce((sum, c) => sum + c.quantity, 0),
       components,
-      bundleName: isCornucopiaOnly ? 'Cornucopia' : 'Custom Sale'
+      bundleName: isOnlyCornucopia
+        ? 'Cornucopia'
+        : `Items Sold (${nameSummary.join(', ')})`
     });
 
     await sale.save();
