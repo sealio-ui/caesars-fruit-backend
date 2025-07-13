@@ -6,7 +6,11 @@ const connectDB = require('./config/db');
 const app = express();
 
 // ✅ Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*', // or set this to your frontend URL e.g. "https://caesars-fruit-frontend.vercel.app"
+  methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
