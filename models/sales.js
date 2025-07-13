@@ -1,10 +1,19 @@
 const mongoose = require('mongoose');
 
 const saleSchema = new mongoose.Schema({
-  item: { type: mongoose.Schema.Types.ObjectId, ref: 'Item'}, 
-  bundleName: { type: String },
-components: [{ name: String, quantity: Number }],
-  quantity: { type: Number, required: true },
+  items: [
+    {
+      item: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' },
+      quantity: Number
+    }
+  ],
+  bundles: [
+    {
+      name: String,
+      components: [{ name: String, quantity: Number }],
+      quantity: Number
+    }
+  ],
   totalPrice: { type: Number, required: true },
   date: { type: Date, default: Date.now }
 });
