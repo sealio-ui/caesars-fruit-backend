@@ -26,7 +26,7 @@ exports.getPurchases = async (req, res) => {
 };
 exports.createPurchase = async (req, res) => {
   try {
-    const { itemId, quantity, unitPrice, supplier, description } = req.body;
+    const { item, quantity, unitPrice, supplier, description } = req.body;
 
     if (!itemId || !quantity || !unitPrice) {
       return res.status(400).json({ error: 'Item, quantity, and unit price are required' });
@@ -39,7 +39,7 @@ exports.createPurchase = async (req, res) => {
       return res.status(400).json({ error: 'Quantity and unit price must be numbers' });
     }
 
-    const itemObj = await Item.findById(itemId);
+    const itemObj = await Item.findById(item);
     if (!itemObj) {
       return res.status(404).json({ error: 'Item not found' });
     }
