@@ -3,7 +3,7 @@ const Item = require('../models/Item');
 
 exports.getSales = async (req, res) => {
   try {
-    const sales = await Sale.find().populate('item').lean();
+    const sales = await Sale.find().lean(); // ✅ removed populate('item')
 
     const formatted = sales.map(sale => ({
       ...sale,
