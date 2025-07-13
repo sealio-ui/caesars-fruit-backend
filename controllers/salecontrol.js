@@ -28,33 +28,24 @@ exports.createSale = async (req, res) => {
 
     let totalPrice = 0;
     const components = [];
+    let isCornucopiaOnly = true;
 
     for (const entry of items) {
       const { itemName, quantity } = entry;
 
       if (itemName === 'Cornucopia') {
+        // Cornucopia logic...
         const grape = await Item.findOne({ name: 'Anggur' });
         const apple = await Item.findOne({ name: 'Apel' });
         const strawberry = await Item.findOne({ name: 'Stroberi' });
         const basket = await Item.findOne({ name: 'Basket' });
 
-        if (
-          !grape || grape.quantityAvailable < 3 * quantity ||
-          !apple || apple.quantityAvailable < 2 * quantity ||
-          !strawberry || strawberry.quantityAvailable < 1 * quantity ||
-          !basket || basket.quantityAvailable < 1 * quantity
-        ) {
-          return res.status(400).json({ error: `Insufficient stock for Cornucopia` });
+        if (!grape || grape.quantityAvailable < 3 * quantity ||
+            !apple || apple.quantityAvailable < 2 * quantity ||
+            !strawberry || strawberry.quantityAvailable < 1 * quantity ||
+            !basket || basket.quantityAvailable < 1 * quantity) {
+          return res.status(400).json({ error: 'Insufficient stock for Cornucopia' });
         }
-
-        const cornTotal = (
-          grape.price * 3 +
-          apple.price * 2 +
-          strawberry.price * 1 +
-          basket.price * 1
-        ) * quantity * 0.8;
-
-        totalPrice += cornTotal;
 
         grape.quantityAvailable -= 3 * quantity;
         apple.quantityAvailable -= 2 * quantity;
@@ -66,21 +57,30 @@ exports.createSale = async (req, res) => {
         await strawberry.save();
         await basket.save();
 
+        totalPrice += (
+          grape.price * 3 +
+          apple.price * 2 +
+          strawberry.price * 1 +
+          basket.price * 1
+        ) * quantity * 0.8;
+
         components.push({ name: 'Cornucopia', quantity });
         components.push({ name: 'Anggur', quantity: 3 * quantity });
         components.push({ name: 'Apel', quantity: 2 * quantity });
         components.push({ name: 'Stroberi', quantity: 1 * quantity });
         components.push({ name: 'Basket', quantity: 1 * quantity });
       } else {
+        isCornucopiaOnly = false;
+
         const item = await Item.findOne({ name: itemName });
         if (!item || item.quantityAvailable < quantity) {
           return res.status(400).json({ error: `Insufficient stock for ${itemName}` });
         }
 
-        totalPrice += item.price * quantity;
         item.quantityAvailable -= quantity;
         await item.save();
 
+        totalPrice += item.price * quantity;
         components.push({ name: itemName, quantity });
       }
     }
@@ -88,7 +88,8 @@ exports.createSale = async (req, res) => {
     const sale = new Sale({
       totalPrice,
       quantity: components.reduce((sum, c) => sum + c.quantity, 0),
-      components
+      components,
+      bundleName: isCornucopiaOnly ? 'Cornucopia' : 'Custom Sale'
     });
 
     await sale.save();
