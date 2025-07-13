@@ -26,15 +26,15 @@ exports.getPurchases = async (req, res) => {
 };
 exports.createPurchase = async (req, res) => {
   try {
-    const { item, quantity, unitPrice, supplier, description } = req.body;
+    const { itemId, quantity, unitPrice, supplier, description } = req.body;
 
-    const itemObj = await Item.findById(item);
+    const itemObj = await Item.findById(itemId);
     if (!itemObj) return res.status(404).json({ error: 'Item not found' });
 
     const amount = unitPrice * quantity;
 
     const purchase = new Purchase({
-      item,
+      item: itemObj._id,
       quantity,
       unitPrice,
       amount,
