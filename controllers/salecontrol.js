@@ -91,7 +91,7 @@ exports.createSale = async (req, res) => {
 
     const sale = new Sale({
       totalPrice,
-      quantity: components.reduce((sum, c) => sum + c.quantity, 0),
+      quantity: items.reduce((sum, i) => sum + i.quantity, 0),
       components,
       bundleName: isOnlyCornucopia
         ? 'Cornucopia'
