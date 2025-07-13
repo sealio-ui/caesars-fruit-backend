@@ -28,15 +28,28 @@ exports.createPurchase = async (req, res) => {
   try {
     const { itemId, quantity, unitPrice, supplier, description } = req.body;
 
-    const itemObj = await Item.findById(itemId);
-    if (!itemObj) return res.status(404).json({ error: 'Item not found' });
+    if (!itemId || !quantity || !unitPrice) {
+      return res.status(400).json({ error: 'Item, quantity, and unit price are required' });
+    }
 
-    const amount = unitPrice * quantity;
+    const parsedQuantity = Number(quantity);
+    const parsedUnitPrice = Number(unitPrice);
+
+    if (isNaN(parsedQuantity) || isNaN(parsedUnitPrice)) {
+      return res.status(400).json({ error: 'Quantity and unit price must be numbers' });
+    }
+
+    const itemObj = await Item.findById(itemId);
+    if (!itemObj) {
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
+    const amount = parsedUnitPrice * parsedQuantity;
 
     const purchase = new Purchase({
       item: itemObj._id,
-      quantity,
-      unitPrice,
+      quantity: parsedQuantity,
+      unitPrice: parsedUnitPrice,
       amount,
       supplier,
       description
@@ -44,26 +57,22 @@ exports.createPurchase = async (req, res) => {
 
     await purchase.save();
 
-    itemObj.quantityAvailable += quantity;
+    itemObj.quantityAvailable += parsedQuantity;
     await itemObj.save();
 
-    const formatted = {
+    res.status(201).json({
       ...purchase.toObject(),
-      unitPriceFormatted: new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR'
-      }).format(unitPrice),
       amountFormatted: new Intl.NumberFormat('id-ID', {
         style: 'currency',
-        currency: 'IDR'
-      }).format(amount)
-    };
-
-    res.status(201).json(formatted);
+        currency: 'IDR',
+      }).format(amount),
+    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+
+
 exports.deletePurchaseById = async (req, res) => {
   try {
     const { id } = req.params;
